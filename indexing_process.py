@@ -7,13 +7,13 @@ from index import Index
 
 
 
-def docs_from_json(json_file):
-   with open(json_file, 'r') as f:
-       docs = json.load(f)
-   doc_store = DictDocumentStore()
-   for doc_id, text in docs.items():
-       doc_store.add_document(Document(doc_id=doc_id, text=text))
-   return doc_store
+def docs_from_json(json_file_location: str) -> DictDocumentStore:
+    doc_store = DictDocumentStore()
+    with open(json_file_location, "r") as f:
+        for line in f:
+            doc = Document.from_json(line)
+            doc_store.add_document(doc)
+    return doc_store
 
 
 
@@ -44,9 +44,11 @@ def create_index(transformed_documents: list[TransformedDocument]) -> Index:
     return index
 
 
-def indexing_process(json_file_location: str) -> tuple:
+def indexing_process(json_file_location: str) -> tuple[DictDocumentStore, Index]:
    documents = docs_from_json(json_file_location)
    transformed_documents = transform_documents(documents.list_all())
    index = create_index(transformed_documents)
    return documents, index
+
+
 
