@@ -20,29 +20,28 @@ class TfIdfInvertedIndex:
 
     def write(self, path: str):
         with open(path, 'w') as fp:
-            
             fp.write(json.dumps({
                 '__metadata__': {
                     'total_documents_count': self.total_documents_count,
-                    'tfs': [   
+                    'doc_scores': [ 
                         {
-                            'term': term,   
-                            'score': count   
+                            'term': term,
+                            'score': score  
                         }
-                        for term, count in self.doc_counts.items()
+                        for term, score in self.doc_scores.items()
                     ]
                 }
             }) + '\n')
             
-            for doc_id, counts in self.term_to_doc_id_tf_scores.items():
+            for term, tfs in self.term_to_doc_id_tf_scores.items():
                 fp.write(json.dumps({
-                    'term': doc_id,  
-                    'tfs': [   
+                    'term': term,
+                    'tfs': [  
                         {
-                            'doc_id': term,   
-                            'score': count   
+                            'doc_id': doc_id,
+                            'score': score 
                         }
-                        for term, count in counts.items()
+                        for doc_id, score in tfs.items()
                     ]
                 }) + '\n')
 
