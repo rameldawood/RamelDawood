@@ -51,9 +51,13 @@ class TfIdfInvertedIndex:
     
     
     def add_document(self, doc: TransformedDocument):
-        term_counts = count_terms(doc.terms)
-        for term, counts in term_counts.items():
-            self.term_to_doc_id_tf_scores[term][doc.doc_id] = counts
+        term_scores = count_terms(doc.terms)  
+        for term, score in term_scores.items():  
+            if term not in self.term_to_doc_id_tf_scores:
+                self.term_to_doc_id_tf_scores[term] = {}
+            self.term_to_doc_id_tf_scores[term][doc.doc_id] = score  
+            self.doc_scores[term] += 1  
+            
         self.total_documents_count += 1
 
     
