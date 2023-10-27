@@ -15,7 +15,7 @@ class TfIdfInvertedIndex:
     def __init__(self):
         # Mapping of terms to the number of documents they occur in.
         self.total_documents_count = 0
-        self.doc_counts = Counter()
+        self.doc_scores = Counter()  
         self.term_to_doc_id_tf_scores = defaultdict(dict)
 
     def write(self, path: str):
