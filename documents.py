@@ -35,16 +35,21 @@ class ListDocumentStore(DocumentStore):
 
     def write(self, path: str):
         with open(path, 'w') as fp:
+            metadata = {
+                "total_documents_count": len(self.docs),
+            }
+            fp.write(json.dumps(metadata) + '\n')
             for doc in self.docs:
-                fp.write(json.dumps(doc._asdict()) + '\n')
+                fp.write(json.dumps(doc._asdict().replace('counts', 'tfs')) + '\n')
 
     @staticmethod
     def read(path: str) -> 'ListDocumentStore':
         docs = []
         with open(path) as fp:
+            metadata = json.loads(fp.readline())
             for line in fp:
                 record = json.loads(line)
-                docs.append(Document(doc_id=record['doc_id'], text=record['text']))
+                docs.append(Document(doc_id=record['term'], text=record['doc_id']))
         return ListDocumentStore(docs)
 
 
@@ -73,23 +78,23 @@ class DictDocumentStore(DocumentStore):
 
     def write(self, path: str):
         with open(path, 'w') as fp:
-            for doc in self.doc_ids_to_docs:
-                fp.write(json.dumps(doc) + '\n')
+            metadata = {
+                "total_documents_count": len(self.doc_ids_to_docs),
+            }
+            fp.write(json.dumps(metadata) + '\n')
+            for doc_id, doc in self.doc_ids_to_docs.items():
+                fp.write(json.dumps(doc._asdict().replace('counts', 'tfs')) + '\n')
 
     @staticmethod
-    def read(path: str) -> 'TfIdfInvertedIndex':
-        index = TfIdfInvertedIndex()                 
-        with open(path, 'r') as fp:
+    def read(path: str) -> 'DictDocumentStore':
+        doc_store = DictDocumentStore()
+        with open(path) as fp:
             metadata = json.loads(fp.readline())
-            index.total_documents_count = metadata['__metadata__']['total_documents_count']
             for line in fp:
                 record = json.loads(line)
-                term = record['term']
-                for item in record['tfs']:
-                    doc_id = item['doc_id']
-                    score = item['score']
-                    index.term_to_doc_id_tf_scores[term][doc_id] = score
-        return index
+                doc = Document(doc_id=record['term'], text=record['doc_id'])
+                doc_store.add_document(doc)
+        return doc_store
 
     def add_document(self, doc: Document):
         self.doc_ids_to_docs[doc.doc_id] = doc
